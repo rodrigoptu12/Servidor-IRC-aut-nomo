@@ -5,7 +5,7 @@ nomes_canais = ["#geral", "#jogos", "#filmes", "#musicas", "#programacao"]
 
 class Canal:
     # todos os canais
-    canais = {}
+    canais: dict[str, "Canal"] = {}  # nome: canal
 
     def __init__(self, nome: str):
         self.nome = nome  # nome do canal
@@ -24,19 +24,19 @@ class Canal:
 
         Canal.canais[nome_canal].usuarios.append(usuario)  # entrar
         usuario.set_canal(nome_canal)  # atualizar canal do usuário
-        return f"Usuário {usuario.nick} entrou no canal {nome_canal}"
+        return f"Usuário {usuario.nickname} entrou no canal {nome_canal}"
 
     @staticmethod
     def remove_usuario(nome_canal, usuario: Usuario):
         if usuario.canal != nome_canal:
-            return "Usuário não está no canal informado"
+            return "ERR_NOTONCHANNEL"
         if nome_canal not in Canal.canais.keys():
-            return "Canal não existe"
+            return "ERR_NOSUCHCHANNEL"
 
         canal = Canal.canais[nome_canal]  # canal que o usuário quer sair
         canal.usuarios.remove(usuario)
         usuario.set_canal(None)  # atualizar canal do usuário
-        return f"Usuário {usuario.nick} saiu do canal {canal.nome}"
+        Canal.enviar_mensagem(nome_canal, f"Usuário {usuario.nickname} saiu do canal", usuario)
 
     @staticmethod
     def mostrar_canal(nome_canal: str):
@@ -45,7 +45,7 @@ class Canal:
         canal = Canal.canais[nome_canal]
         frase = f"Usuarios do canal :{nome_canal}\n"
         for usuario in canal.usuarios:
-            frase += f"Usuario: {usuario.nick}\n"
+            frase += f"Usuario: {usuario.nickname}\n"
         return frase
 
     @staticmethod
@@ -54,14 +54,15 @@ class Canal:
         for nome in nomes_canais:
             canal = Canal.canais[nome]
             frase += f"Canal: {canal.nome} Número de Usuários: ({len(canal.usuarios)})\n"
-
         return frase
 
     @staticmethod
-    def enviar_mensagem(nome_canal: str, mensagem: str, usuario: Usuario):
+    def enviar_mensagem(nome_canal: str, mensagem: str, remetente: Usuario = None):
         canal = Canal.canais[nome_canal]
+        # se o remetente estiver no canal, não precisa enviar a mensagem para ele
         for usuario in canal.usuarios:
-            usuario.enviar_mensagem(mensagem)
+            if usuario.nickname != remetente.nickname:
+                usuario.receber_mensagem(mensagem)
 
     @staticmethod
     def iniciar_canais_padrao():
