@@ -24,7 +24,9 @@ class Canal:
 
         Canal.canais[nome_canal].usuarios.append(usuario)  # entrar
         usuario.set_canal(nome_canal)  # atualizar canal do usuário
-        return f"Usuário {usuario.nickname} entrou no canal {nome_canal}"
+        Canal.enviar_mensagem(nome_canal, f"Usuário {usuario.nickname} entrou do canal", usuario)
+
+        #return f"Usuário {usuario.nickname} entrou no canal {nome_canal}"
 
     @staticmethod
     def remove_usuario(nome_canal, usuario: Usuario):
@@ -60,9 +62,10 @@ class Canal:
     def enviar_mensagem(nome_canal: str, mensagem: str, remetente: Usuario = None):
         canal = Canal.canais[nome_canal]
         # se o remetente estiver no canal, não precisa enviar a mensagem para ele
+        message = remetente.nickname + ": " + mensagem 
         for usuario in canal.usuarios:
             if usuario.nickname != remetente.nickname:
-                usuario.receber_mensagem(mensagem)
+                usuario.receber_mensagem(message)
 
     @staticmethod
     def iniciar_canais_padrao():

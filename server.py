@@ -19,74 +19,88 @@ def handle_client(client_socket: socket.socket, client_address):
 
     while True:
         # Recebe o comando do cliente
-        command = client_socket.recv(1024).decode("utf-8")
-        if command == "/QUIT":
+        message = client_socket.recv(1024).decode("utf-8")
+        if not message:
+            # Fecha a conexão se o comando for 'QUIT'
+            # Remove o usuário da lista de usuários conectados
+            Canal.remove_usuario(usuario.canal, usuario)
+            usuario.sair()
+            usuario.mostrar_usuarios()
+            break
+        elif message == "/QUIT":
             # Fecha a conexão se o comando for 'QUIT'
             # Remove o usuário da lista de usuários conectados
             Canal.remove_usuario(usuario.canal, usuario)
             usuario.sair()
 
             break
-        elif command.startswith("/NICK"):
+        elif message.startswith("/NICK"):
             # Dar um apelido ou Altera o apelido do usuário
             #verificar numero de argumentos
-            if len(command.split(" ")) != 2:
+            if len(message.split(" ")) != 2:
                 client_socket.send("ERR_PARAMS".encode("utf-8"))
                 continue
-            _, new_nickname = command.split(" ", 1)
+            _, new_nickname = message.split(" ", 1)
             # Verifica se o apelido já está sendo usado por outro usuário
-            print("comando nick: ", command)
+            print("comando nick: ", message)
             usuario.mudar_nickname(new_nickname)
             # mostrar lista de usuários
             usuario.mostrar_usuarios()
-        elif command.startswith("/USER"):
+        elif message.startswith("/USER"):
             # Registra o nome de usuário
             # /USER <username> <hostname> <servername> :<realname>
-            _, username, _, _, realname = command.split(" ", 4)
+            _, username, _, _, realname = message.split(" ", 4)
             usuario.set_usuario(username, realname)
-        elif command.startswith("/JOIN"):
+        elif message.startswith("/JOIN"):
             # Entra em um canal  
             # /JOIN <channel> 
             #verificar numero de argumentos
-            if len(command.split(" ")) != 2:
+            if len(message.split(" ")) != 2:
                 client_socket.send("ERR_PARAMS".encode("utf-8"))
                 continue
-            _, canal = command.split(" ", 1)
-            usuario.receber_mensagem(Canal.add_usuario(canal, usuario))
-        elif command.startswith("/PART"):
+            _, canal = message.split(" ", 1)
+            Canal.add_usuario(canal, usuario)
+        elif message.startswith("/PART"):
             # Sai de um canal
             # /PART <channel> 
             #verificar numero de argumentos
-            if len(command.split(" ")) != 2:
+            if len(message.split(" ")) != 2:
                 client_socket.send("ERR_PARAMS".encode("utf-8"))
                 continue
-            _, canal = command.split(" ", 1)
-            usuario.receber_mensagem(Canal.remove_usuario(canal, usuario))
-        elif command.startswith("/LIST"):
+            _, canal = message.split(" ", 1)
+            Canal.remove_usuario(canal, usuario)
+        elif message.startswith("/LIST"):
             # Lista os canais existentes
             usuario.receber_mensagem(Canal.mostrar_canais())
-        elif command.startswith("/PRIVMSG"):
+        elif message.startswith("/PRIVMSG"):
             # Envia uma mensagem para um usuário ou canal
             # /PRIVMSG <receiver> :<message>
             #verificar numero de argumentos
-            if len(command.split(" ")) != 3:
+            if len(message.split(" ")) != 3:
                 client_socket.send("ERR_PARAMS".encode("utf-8"))
                 continue
-            _, receiver, message = command.split(" ", 2)
+            _, receiver, message = message.split(" ", 2)
 
             #verifica se o destino é um canal ou usuário
             if receiver.startswith("#"):  
                 Canal.enviar_mensagem(receiver, message, usuario)
             else:
                 usuario.enviar_mensagem(receiver, message)
-        elif command.startswith("/WHO"):
+        elif message.startswith("/WHO"):
             # Lista os usuários conectados em um canal
             #verificar numero de argumentos
-            if len(command.split(" ")) != 2:
+            if len(message.split(" ")) != 2:
                 client_socket.send("ERR_PARAMS".encode("utf-8"))
                 continue
-            _, canal = command.split(" ", 1)
+            _, canal = message.split(" ", 1)
             usuario.receber_mensagem(Canal.mostrar_canal(canal))
+        else:
+            if (usuario.canal != None):
+                Canal.enviar_mensagem(usuario.canal, message, usuario)
+                mensagem = usuario.nickname + ": " + message
+                usuario.receber_mensagem(mensagem)
+            else:
+                usuario.receber_mensagem("ERRO! ENTRE EM UM CANAL PRIMEIRO!")
 
 def main():
 
