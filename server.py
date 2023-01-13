@@ -94,7 +94,7 @@ def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Obtém o endereço IP e a porta do servidor
-    server_address = ("localhost", 3033)
+    server_address = ("localhost", 3030)
     print("Iniciando o servidor em {} na porta {}".format(*server_address))
     server_socket.bind(server_address)
 
