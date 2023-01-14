@@ -16,6 +16,17 @@ def handle_client(client_socket: socket.socket, client_address):
             break
 
     usuario.mostrar_usuarios()
+    usuario.receber_mensagem("Bem vindo ao servidor de chat!" \
+                                "\nDigite /NICK <apelido> para mudar seu apelido" \
+                                "\nDigite /USER <username> <realname> para definir seu username e realname" \
+                                "\nDigite /QUIT para sair do servidor" \
+                                "\nDigite /JOIN <canal> para entrar em um canal" \
+                                "\nDigite /PART <canal> para sair de um canal" \
+                                "\nDigite /LIST para ver os canais disponíveis" \
+                                "\nDigite /PRIVMSG <destinatario> <mensagem> para enviar uma mensagem privada" \
+                                "\nDigite /WHO para ver os usuários conectados" \
+                            )
+
 
     while True:
         # Recebe o comando do cliente
@@ -82,6 +93,7 @@ def handle_client(client_socket: socket.socket, client_address):
             _, receiver, message = message.split(" ", 2)
 
             #verifica se o destino é um canal ou usuário
+            message = "(privado) " + receiver +": "+ message
             if receiver.startswith("#"):  
                 Canal.enviar_mensagem(receiver, message, usuario)
             else:

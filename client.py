@@ -60,7 +60,7 @@ def start(stdscr: curses.window):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Cria o socket do cliente
 
     server_address = ('localhost', 3030) # Endereço do servidor
-    stdscr.addstr("CLIENTE IRC VERSÃO 1.0 ALPHA")
+    stdscr.addstr("CLIENTE IRC VERSÃO 1.0 ALPHA\n")
     stdscr.addstr(f"Conectando ao servidor {server_address[0]}:{server_address[1]}") # Mostra a mensagem de conexão
     err = client_socket.connect_ex(server_address) # Tenta conectar ao servidor
     if err == 115: # Se o erro for 115, o servidor não está online

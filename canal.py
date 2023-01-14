@@ -25,21 +25,24 @@ class Canal:
         Canal.canais[nome_canal].usuarios.append(usuario)  # entrar
         usuario.set_canal(nome_canal)  # atualizar canal do usuário
         Canal.enviar_mensagem(nome_canal, f"Usuário {usuario.nickname} entrou do canal", usuario)
-
+        usuario.receber_mensagem("Bem vindo ao canal " + nome_canal + "\n")
         #return f"Usuário {usuario.nickname} entrou no canal {nome_canal}"
 
     @staticmethod
     def remove_usuario(nome_canal, usuario: Usuario):
         if usuario.canal != nome_canal:
-            return "ERR_NOTONCHANNEL"
+            usuario.receber_mensagem("ERR_NOTONCHANNEL")
+            return
         if nome_canal not in Canal.canais.keys():
-            return "ERR_NOSUCHCHANNEL"
+            usuario.receber_mensagem("ERR_NOSUCHCHANNEL")
+            return
 
         canal = Canal.canais[nome_canal]  # canal que o usuário quer sair
         canal.usuarios.remove(usuario)
         usuario.set_canal(None)  # atualizar canal do usuário
         Canal.enviar_mensagem(nome_canal, f"Usuário {usuario.nickname} saiu do canal", usuario)
-
+        usuario.receber_mensagem("Você saiu do canal " + nome_canal + "\n")
+        
     @staticmethod
     def mostrar_canal(nome_canal: str):
         if nome_canal not in Canal.canais.keys():
