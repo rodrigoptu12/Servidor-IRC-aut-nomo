@@ -126,7 +126,7 @@ def main():
     ip = get_ip()
 
     # Obtém o endereço IP e a porta do servidor
-    server_address = (ip, 6667)
+    server_address = ("26.40.92.178", 4400)
     print("Iniciando o servidor em {} na porta {}".format(*server_address))
     server_socket.bind(server_address)
 

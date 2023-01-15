@@ -32,12 +32,7 @@ def output_thread(output_win: curses.window, messages_queue: Queue):
         if not messages_queue.empty(): # Se a fila não estiver vazia
             with cursor_lock: # trava o cursor para evitar que o usuário escreva enquanto a mensagem está sendo exibida
                 response = handle_response(messages_queue.get()) # Pega a mensagem da fila
-                for char in response:
-                    if char in ['\r', '\n']:
-                        output_win.addch('\n')
-                        continue
-                    output_win.addch(char)
-                output_win.addch('\n')
+                output_win.addstr(f"{response}\n")
                 output_win.refresh()
             time.sleep(.1) # sleep para permitir que outra thread "pegue" o cursor
                 
@@ -118,6 +113,8 @@ def setup_windows(stdscr: curses.window):
 
     messages_win = curses.newwin(curses.LINES-2, curses.COLS, 0, 0) # Cria a janela de output
     messages_win.bkgd(' ', curses.color_pair(1)) # Define a cor de fundo da janela
+    messages_win.scrollok(True) # Habilita o scroll da janela
+
     messages_win.refresh()
 
     input_win = curses.newwin(1, curses.COLS, curses.LINES-1, 0) # Cria a janela de input
@@ -174,7 +171,7 @@ def chat_screen(input_win: curses.window, client_socket: socket.socket):
 
 # Função que inicia e executa o cliente
 def start(stdscr: curses.window):
-    client_socket = connection_screen(stdscr, ('192.168.96.5', 6667)) # Conecta ao servidor
+    client_socket = connection_screen(stdscr, ('26.40.92.178', 4400)) # Conecta ao servidor
 
     login_screen(stdscr, client_socket) # Tela de login
 

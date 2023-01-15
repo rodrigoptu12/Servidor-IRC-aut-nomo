@@ -12,7 +12,8 @@ def receive(client_socket):
       pass
 
 def main():
-  address = ('192.168.96.5', 6667)
+  print("Iniciando o cliente...")
+  address = ('26.40.92.178', 4400)
   client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   client_socket.connect(address)
 
