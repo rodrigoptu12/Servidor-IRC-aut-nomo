@@ -23,7 +23,7 @@ def handle_response(response: str): # Tratamento de erros
         return 'Faltam parâmetros'
     elif response == 'ERR_CONNECTIONLOST':
         return 'Conexão perdida'
-    return response # Se não for um erro, retorna a mensagem normalmente
+    return response
 
 # Função para mostrar as mensagens que estão na fila na tela
 def output_thread(output_win: curses.window, messages_queue: Queue):
@@ -32,8 +32,13 @@ def output_thread(output_win: curses.window, messages_queue: Queue):
         if not messages_queue.empty(): # Se a fila não estiver vazia
             with cursor_lock: # trava o cursor para evitar que o usuário escreva enquanto a mensagem está sendo exibida
                 response = handle_response(messages_queue.get()) # Pega a mensagem da fila
-                output_win.addstr(f"{response}\n") # Exibe a mensagem na tela
-                output_win.refresh() # Atualiza a tela
+                for char in response:
+                    if char in ['\r', '\n']:
+                        output_win.addch('\n')
+                        continue
+                    output_win.addch(char)
+                output_win.addch('\n')
+                output_win.refresh()
             time.sleep(.1) # sleep para permitir que outra thread "pegue" o cursor
                 
 # Função para receber as mensagens do servidor e colocar na fila
@@ -41,7 +46,7 @@ def messages_queue_thread(client_socket: socket.socket, messages_queue: Queue):
     global stop_messages_queue_thread
     try:
         while client_socket.fileno() != -1 and not stop_messages_queue_thread: # Enquanto o socket estiver aberto
-            response = client_socket.recv(1024).decode() # Recebe a mensagem do servidor
+            response = client_socket.recv(2048).decode('utf-8') # Recebe a mensagem do servidor
             if not response: # Se a mensagem estiver vazia, encerra a conexão
                 messages_queue.put('Conexão encerrada pelo servidor')
                 break
@@ -137,7 +142,7 @@ def input_message(input_win: curses.window, client_socket: socket.socket):
                 # verifica se o usuário pressionou ENTER
                 if char == curses.KEY_ENTER or char in [10, 13]:
                     if client_socket.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR) == 0: # se a conexão com o servidor estiver ativa
-                        client_socket.send(message.encode()) # envia a mensagem para o servidor
+                        client_socket.send(message.encode('utf-8')) # envia a mensagem para o servidor
                     if message == "/QUIT":
                         return False # retorna False para indicar que o usuário digitou /QUIT
                     return True # retorna True para indicar que o usuário não digitou /QUIT
@@ -160,7 +165,7 @@ def input_message(input_win: curses.window, client_socket: socket.socket):
 def chat_screen(input_win: curses.window, client_socket: socket.socket):
     global stop_output_thread, stop_messages_queue_thread
     while True:
-        # se o usuário pressionar ENTER, sai do loop
+        # se o usuário digitar /QUIT, sai do loop
         if not input_message(input_win, client_socket):
             stop_messages_queue_thread = True
             stop_output_thread = True 
@@ -169,7 +174,7 @@ def chat_screen(input_win: curses.window, client_socket: socket.socket):
 
 # Função que inicia e executa o cliente
 def start(stdscr: curses.window):
-    client_socket = connection_screen(stdscr, ('localhost', 3030)) # Conecta ao servidor
+    client_socket = connection_screen(stdscr, ('192.168.96.5', 6667)) # Conecta ao servidor
 
     login_screen(stdscr, client_socket) # Tela de login
 

@@ -15,7 +15,6 @@ def handle_client(client_socket: socket.socket, client_address):
         if usuario.conectar(nickname, client_socket, client_address):
             break
 
-    usuario.mostrar_usuarios()
     usuario.receber_mensagem("Bem vindo ao servidor de chat!" \
                                 "\nDigite /NICK <apelido> para mudar seu apelido" \
                                 "\nDigite /USER <username> <host> <port> <realname> para definir seu username e realname" \
@@ -24,21 +23,14 @@ def handle_client(client_socket: socket.socket, client_address):
                                 "\nDigite /PART <canal> para sair de um canal" \
                                 "\nDigite /LIST para ver os canais disponíveis" \
                                 "\nDigite /PRIVMSG <destinatario> <mensagem> para enviar uma mensagem privada" \
-                                "\nDigite /WHO para ver os usuários conectados" \
+                                "\nDigite /WHO <canal> para ver os usuários conectados" \
                             )
 
 
     while True:
         # Recebe o comando do cliente
         message = client_socket.recv(1024).decode("utf-8")
-        if not message:
-            # Fecha a conexão se o comando for 'QUIT'
-            # Remove o usuário da lista de usuários conectados
-            Canal.remove_usuario(usuario.canal, usuario)
-            usuario.sair()
-            usuario.mostrar_usuarios()
-            break
-        elif message == "/QUIT":
+        if not message or message == "/QUIT":
             # Fecha a conexão se o comando for 'QUIT'
             # Remove o usuário da lista de usuários conectados
             Canal.remove_usuario(usuario.canal, usuario)
@@ -53,10 +45,7 @@ def handle_client(client_socket: socket.socket, client_address):
                 continue
             _, new_nickname = message.split(" ", 1)
             # Verifica se o apelido já está sendo usado por outro usuário
-            print("comando nick: ", message)
             usuario.mudar_nickname(new_nickname)
-            # mostrar lista de usuários
-            usuario.mostrar_usuarios()
         elif message.startswith("/USER"):
             # Registra o nome de usuário
             # /USER <username> <hostname> <servername> :<realname>
@@ -106,6 +95,9 @@ def handle_client(client_socket: socket.socket, client_address):
                 continue
             _, canal = message.split(" ", 1)
             usuario.receber_mensagem(Canal.mostrar_canal(canal))
+        elif message.startswith("/"):
+            # Comando inválido
+            usuario.receber_mensagem("ERR_UNKNOWNCOMMAND")
         else:
             if (usuario.canal != None):
                 Canal.enviar_mensagem(usuario.canal, message, usuario)
@@ -114,13 +106,27 @@ def handle_client(client_socket: socket.socket, client_address):
             else:
                 usuario.receber_mensagem("ERRO! ENTRE EM UM CANAL PRIMEIRO!")
 
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        s.connect(('8.8.8.8', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
 def main():
 
     # Cria o socket do servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    ip = get_ip()
+
     # Obtém o endereço IP e a porta do servidor
-    server_address = ("localhost", 3030)
+    server_address = (ip, 6667)
     print("Iniciando o servidor em {} na porta {}".format(*server_address))
     server_socket.bind(server_address)
 

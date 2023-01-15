@@ -40,11 +40,9 @@ class Usuario:
             self.usuarios[novo_nickname] = self.usuarios[self.nickname]
             del self.usuarios[self.nickname]
             self.nickname = novo_nickname
-            print(f"Nickname alterado para {self.nickname}")
             self.socket.send("OK".encode("utf-8"))
         else:
             self.socket.send("ERR_NICKNAMEINUSE".encode("utf-8"))
-            print("Nickname já está em uso")
 
     def set_usuario(self, username: str = None, realname: str = None):
         self.username = username

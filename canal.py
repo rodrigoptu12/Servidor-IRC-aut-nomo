@@ -55,10 +55,10 @@ class Canal:
 
     @staticmethod
     def mostrar_canais():
-        frase = "Canais:\n"
+        frase = "Canais:"
         for nome in nomes_canais:
             canal = Canal.canais[nome]
-            frase += f"Canal: {canal.nome} Número de Usuários: ({len(canal.usuarios)})\n"
+            frase += f"\nCanal: {canal.nome} Número de Usuários: ({len(canal.usuarios)})"
         return frase
 
     @staticmethod
