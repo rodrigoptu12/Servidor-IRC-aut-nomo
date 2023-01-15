@@ -18,7 +18,7 @@ def handle_client(client_socket: socket.socket, client_address):
     usuario.mostrar_usuarios()
     usuario.receber_mensagem("Bem vindo ao servidor de chat!" \
                                 "\nDigite /NICK <apelido> para mudar seu apelido" \
-                                "\nDigite /USER <username> <realname> para definir seu username e realname" \
+                                "\nDigite /USER <username> <host> <port> <realname> para definir seu username e realname" \
                                 "\nDigite /QUIT para sair do servidor" \
                                 "\nDigite /JOIN <canal> para entrar em um canal" \
                                 "\nDigite /PART <canal> para sair de um canal" \

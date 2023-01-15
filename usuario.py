@@ -2,8 +2,8 @@ import socket
 
 
 class Usuario:
-    # todos os usuários
-    usuarios = {} # nickname: usuario
+    # todos os usuários dicionario str: Usuario adicionar tipagem na variavel
+    usuarios: dict[str, "Usuario"] = {}
 
     def __init__(self):
         pass
